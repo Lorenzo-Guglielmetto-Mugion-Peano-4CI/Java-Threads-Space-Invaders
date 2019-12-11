@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -34,15 +36,20 @@ public class SpaceInvaders extends JFrame {
         
         // aggiungo lo spazio profondo alla finestra di gioco
         this.setResizable(false);
+        setIgnoreRepaint(true);
+
+        
+        // avvia l'introduzione
         Intro intro = new Intro();
         this.add(intro);
         // impacchetto il tutto e rendi visibile
         this.pack();
         this.setVisible(true);
-        // avvia l'introduzione
+
+
         intro.run();
 //        this.remove(intro);
-        this.add(space);
+//        this.add(space);
         
     }
     
@@ -70,27 +77,42 @@ class Space extends Canvas {
 
 class Intro extends Space {
     private int i = 0;
-    
+    private BufferStrategy strategy;
+        
     void run() throws InterruptedException {
-       setBackground (Color.BLACK);
-       setSize(800, 600);
-               
+        createBufferStrategy(2);
+        strategy = getBufferStrategy();
         for(i=100;i>=0;i-=1) {
             System.out.println("i: " + i);
-            this.repaint();
-            Thread.sleep(50);
+            disegna();
+            Thread.sleep(10);
         }
-
+        //Thread.sleep(100);
+        for(i=0;i<10;i+=1) {
+            System.out.println("i: " + i);
+            disegna();
+            //Thread.sleep(10);
+        }
     }
 
-    @Override
-    public void paint(Graphics g) {
-        // scrivi nel canvas la scritta in Rosso 
+    
+    void disegna() {
+        //chiediamo il buffer in cui comporre la nuova immagine
+        Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
+        //cancelliamo l'immagine precedente coprendola con un rettangolo nero
+        g.setColor(Color.black);
+        g.fillRect(0,0,800,600);
+         
+        // scrivi nel buffer la scritta in Rosso 
         g.setColor(Color.red);
         g.setFont(new Font("Bold", Font.PLAIN, 40+i));
         g.drawString("Space Invaders", 100+i, 100+i);
         g.setFont(new Font("Bold", Font.PLAIN, 10+i));
         g.drawString("          by Matteo Palitto", 110+i+i, 110+i+i);
+        //rilascia risorse create per la composizione di questa immagine
+        g.dispose(); 
+        //visualizza la nuova immagine sullo schermo
+        strategy.show(); 
     }
 
 }
